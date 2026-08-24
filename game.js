@@ -102,6 +102,7 @@
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
     frame.addEventListener("load", () => {
+      youtubeCommand(frame, "seekTo", [startAt, true]);
       youtubeCommand(frame, "setVolume", [48]);
       youtubeCommand(frame, "unMute");
     }, { once: true });
@@ -182,7 +183,7 @@
     hideCameo();
     const messages = [
       { text: "You maggot!", startAt: 1463, duration: 2 },
-      { text: "You are banished!", startAt: 2214, duration: 4 }
+      { text: "You are banished!", startAt: 2214.2, duration: 4.3 }
     ];
     const message = messages[Math.floor(Math.random() * messages.length)];
     verdict.textContent = message.text;
