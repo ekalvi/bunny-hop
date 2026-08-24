@@ -26,10 +26,17 @@
   let animation = 0;
   let spawnCount = 0;
   let gobbleFlash = 0;
+  let inputLockedUntil = 0;
+  let unlockTimer = 0;
 
   const announce = text => { status.textContent = text; };
   const reset = () => {
     cancelAnimationFrame(animation);
+    clearTimeout(unlockTimer);
+    inputLockedUntil = 0;
+    startButton.disabled = false;
+    jumpButton.disabled = false;
+    if (retryButton) retryButton.disabled = false;
     obstacles = [];
     snacks = [];
     bunny.y = ground - bunny.height;
@@ -47,6 +54,7 @@
   };
 
   const start = () => {
+    if (performance.now() < inputLockedUntil) return;
     reset();
     playing = true;
     startButton.textContent = "Restart game";
@@ -56,8 +64,9 @@
   };
 
   const jump = () => {
+    if (performance.now() < inputLockedUntil) return;
     if (!playing) start();
-    bunny.vy = -670;
+    if (playing) bunny.vy = -670;
   };
 
   const intersects = (a, b, inset = 0) =>
@@ -87,8 +96,18 @@
     if (!gatekeeperPhoto.src) gatekeeperPhoto.src = gatekeeperPhoto.dataset.src;
     overlay.classList.remove("is-resting");
     overlay.classList.add("is-crashing");
+    inputLockedUntil = performance.now() + 1600;
+    startButton.disabled = true;
+    jumpButton.disabled = true;
+    if (retryButton) retryButton.disabled = true;
+    clearTimeout(unlockTimer);
+    unlockTimer = window.setTimeout(() => {
+      startButton.disabled = false;
+      jumpButton.disabled = false;
+      if (retryButton) retryButton.disabled = false;
+    }, 1600);
     const reason = iceberg ? "You accidentally ate iceberg lettuce." : "Your bunny bumped an obstacle.";
-    announce(`${verdict.textContent} ${reason} Score: ${score}.`);
+    announce(`${verdict.textContent} ${reason} Score: ${score}. Controls unlock in a moment.`);
     overlay.hidden = false;
   };
 
