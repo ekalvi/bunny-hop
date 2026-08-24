@@ -1,16 +1,21 @@
 # Hop for the Prize!
 
-A polished, mobile-first comedy site about The Gatekeeper, his rules, number and cute-colour allocation, and an interactive bunny side-scroller. It is dependency-free, uses accessible controls, and loads Gatekeeper media only when triggered.
+A polished, mobile-first recruitment website for The Gatekeeper's friendly, voluntary bunny-hopping market activity. It is a dependency-free static site with an original SVG illustration, welfare-first guidance, accessible controls, a privacy-respecting email interest form, and an on-demand Gatekeeper video reference.
 
 ## Files
 
 - `index.html` — semantic one-page site and all copy
 - `styles.css` — responsive design, accessible focus states, and reduced-motion support
-- `script.js` — lazy, accessible Gatekeeper dialog behavior
+- `event-config.js` — **the single place to edit event details**
+- `script.js` — event display, Gatekeeper dialog, and local `mailto:` form preparation
 - `favicon.svg`, `social-card.svg` — original local artwork
 - The friendly cartoon Gatekeeper is an original inline SVG in `index.html`; the real Gatekeeper appears only after the video is opened
 - `404.html` — custom not-found page
 - `server.py` — LAN-only static HTTP server with security headers
+
+## Edit event details
+
+Open `event-config.js` and replace the empty strings in `window.HOP_EVENT`. Leave unknown values empty. Once `contactEmail` contains a valid address, the form enables itself and opens the visitor's email client with a prefilled message. The site itself never stores or transmits form data.
 
 ## Run locally
 

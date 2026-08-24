@@ -4,7 +4,7 @@ ARG Q5M_RELEASE
 USER root
 COPY q5m/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=0555 q5m/health.sh /usr/local/bin/bunny-hop-health
-COPY index.html styles.css script.js game.js favicon.svg social-card.svg gatekeeper-cartoon.svg gatekeeper-banished.jpg gatekeeper-come-closer.mp4 gatekeeper-never-closer.mp4 404.html /usr/share/nginx/html/
+COPY index.html styles.css script.js game.js event-config.js favicon.svg social-card.svg gatekeeper-cartoon.svg gatekeeper-banished.jpg gatekeeper-come-closer.mp4 gatekeeper-never-closer.mp4 404.html /usr/share/nginx/html/
 RUN test "${#Q5M_RELEASE}" -eq 40 \
     && case "$Q5M_RELEASE" in *[!0-9a-f]*) exit 1 ;; *) : ;; esac \
     && printf '%s\n' "$Q5M_RELEASE" > /usr/share/nginx/html/.q5m-release \
