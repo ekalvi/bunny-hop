@@ -194,7 +194,7 @@
     hideCameo();
     const messages = [
       { text: "You maggot!", startAt: 1462.9, duration: 2.3 },
-      { text: "You are banished!", startAt: 2214.1, duration: 4.2 }
+      { text: "You are banished!", startAt: 2214, duration: 4 }
     ];
     const message = messages[Math.floor(Math.random() * messages.length)];
     verdict.textContent = message.text;
