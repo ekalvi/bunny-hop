@@ -12,10 +12,10 @@
   <meta property="og:image:alt" content="A rabbit hopping toward fresh romaine in a market crate">
   <title>Pop-Up Hop-Up Bunny Training | Hop for the Prize!</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <script src="event-config.js?v=5" defer></script>
   <script src="script.js?v=5" defer></script>
-  <script src="game.js?v=5" defer></script>
+  <script src="game.js?v=6" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -106,6 +106,7 @@
         <div class="game-hud"><p>Romaine gobbled: <strong id="game-score">0</strong></p><p id="game-status" role="status" aria-live="polite">Press Start hopping, then use Space, Arrow Up, the canvas, or the Hop button.</p></div>
         <div class="game-stage"><canvas id="bunny-game-canvas" width="900" height="400" tabindex="0" aria-label="Bunny side-scroller game. Jump over international equestrian hurdles, collect romaine, and avoid iceberg lettuce.">Your browser does not support the bunny game canvas.</canvas>
           <div class="game-video-cameo" id="game-video-cameo" hidden aria-hidden="true"><div id="game-video-frame"></div><span>A message from The Gatekeeper</span></div>
+          <div class="game-audio-frame" id="game-audio-frame" aria-hidden="true"></div>
           <div class="game-gatekeeper" id="game-gatekeeper" hidden><img id="game-gatekeeper-photo" data-src="gatekeeper-banished.jpg?v=1" alt="The real Gatekeeper appearing after the iceberg mistake"><p id="game-verdict">You are banished!</p><button id="game-retry" type="button">Face the course again</button></div>
         </div>
         <div class="game-controls"><button class="button secondary" id="game-start" type="button">Start hopping</button><button class="button primary game-jump" id="game-jump" type="button">Hop! <span aria-hidden="true">↑</span></button></div>

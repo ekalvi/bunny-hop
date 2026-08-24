@@ -11,7 +11,8 @@
   const retryButton = document.querySelector("#game-retry");
   const cameo = document.querySelector("#game-video-cameo");
   const cameoFrame = document.querySelector("#game-video-frame");
-  if (!canvas || !startButton || !jumpButton || !status || !scoreNode || !overlay || !cameo || !cameoFrame) return;
+  const deathAudioFrame = document.querySelector("#game-audio-frame");
+  if (!canvas || !startButton || !jumpButton || !status || !scoreNode || !overlay || !cameo || !cameoFrame || !deathAudioFrame) return;
 
   const ctx = canvas.getContext("2d");
   const W = canvas.width;
@@ -32,6 +33,7 @@
   let unlockTimer = 0;
   let cameoTimer = 0;
   let cameoVolumeTimer = 0;
+  let deathAudioTimer = 0;
 
   const hurdleKinds = ["rails", "cross", "brush", "wall"];
   const hurdleFlags = ["sweden", "england", "scotland", "france", "netherlands", "ireland"];
@@ -62,7 +64,7 @@
     frame.title = "A brief message from The Gatekeeper";
     frame.allow = "autoplay; encrypted-media; picture-in-picture";
     frame.referrerPolicy = "strict-origin-when-cross-origin";
-    frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
     frame.addEventListener("load", () => {
       let volume = 0;
       youtubeCommand(frame, "unMute");
@@ -87,10 +89,31 @@
     cameoTimer = window.setTimeout(hideCameo, duration * 1000 + 250);
   };
 
+  const hideDeathAudio = () => {
+    clearTimeout(deathAudioTimer);
+    deathAudioFrame.replaceChildren();
+  };
+
+  const playGatekeeperDeathAudio = (startAt, duration) => {
+    hideDeathAudio();
+    const frame = document.createElement("iframe");
+    frame.title = "Gatekeeper game-over audio";
+    frame.allow = "autoplay; encrypted-media";
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
+    frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    frame.addEventListener("load", () => {
+      youtubeCommand(frame, "setVolume", [48]);
+      youtubeCommand(frame, "unMute");
+    }, { once: true });
+    deathAudioFrame.append(frame);
+    deathAudioTimer = window.setTimeout(hideDeathAudio, duration * 1000 + 400);
+  };
+
   const reset = () => {
     cancelAnimationFrame(animation);
     clearTimeout(unlockTimer);
     hideCameo();
+    hideDeathAudio();
     inputLockedUntil = 0;
     startButton.disabled = false;
     jumpButton.disabled = false;
@@ -157,8 +180,13 @@
     playing = false;
     cancelAnimationFrame(animation);
     hideCameo();
-    const messages = ["You maggot!", "You are banished!"];
-    verdict.textContent = messages[Math.floor(Math.random() * messages.length)];
+    const messages = [
+      { text: "You maggot!", startAt: 1463, duration: 2 },
+      { text: "You are banished!", startAt: 2214, duration: 4 }
+    ];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    verdict.textContent = message.text;
+    playGatekeeperDeathAudio(message.startAt, message.duration);
     if (!gatekeeperPhoto.src) gatekeeperPhoto.src = gatekeeperPhoto.dataset.src;
     overlay.classList.remove("is-resting");
     overlay.classList.add("is-crashing");
@@ -219,7 +247,7 @@
         gobbleFlash = 0.55;
         announce(`Crunch! Romaine gobbled. Score: ${score}.`);
         if (score % 9 === 0) playGatekeeperCameo(1457, 8);
-        else if (score === 3) playGatekeeperCameo(1444, 4);
+        else if (score % 3 === 0) playGatekeeperCameo(1444, 4);
       }
     }
   };
