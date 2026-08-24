@@ -60,12 +60,22 @@
     clearTimeout(cameoTimer);
     clearInterval(cameoVolumeTimer);
     cameoFrame.replaceChildren();
+
+    // A local crop of the same source video keeps YouTube chrome out of the visual cameo.
+    const video = document.createElement("video");
+    video.src = startAt === 1457 ? "gatekeeper-never-closer.mp4" : "gatekeeper-come-closer.mp4";
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
+
+    // Keep the YouTube embed audio-only so its controls and overlays can never be seen.
     const frame = document.createElement("iframe");
-    frame.title = "A brief message from The Gatekeeper";
-    frame.allow = "autoplay; encrypted-media; picture-in-picture";
+    frame.title = "Gatekeeper cameo audio";
+    frame.allow = "autoplay; encrypted-media";
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
     frame.addEventListener("load", () => {
+      video.play().catch(() => {});
       let volume = 0;
       youtubeCommand(frame, "unMute");
       youtubeCommand(frame, "setVolume", [volume]);
@@ -83,7 +93,8 @@
         }, 90);
       }, Math.max(800, duration * 1000 - 900));
     }, { once: true });
-    cameoFrame.append(frame);
+    cameoFrame.append(video, frame);
+    window.setTimeout(() => { if (video.paused) video.play().catch(() => {}); }, 500);
     cameo.hidden = false;
     requestAnimationFrame(() => cameo.classList.add("is-visible"));
     cameoTimer = window.setTimeout(hideCameo, duration * 1000 + 250);
@@ -183,7 +194,7 @@
     hideCameo();
     const messages = [
       { text: "You maggot!", startAt: 1462.9, duration: 2.3 },
-      { text: "You are banished!", startAt: 2214.2, duration: 4.3 }
+      { text: "You are banished!", startAt: 2214.1, duration: 4.2 }
     ];
     const message = messages[Math.floor(Math.random() * messages.length)];
     verdict.textContent = message.text;
