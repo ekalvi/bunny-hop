@@ -9,7 +9,9 @@
   const gatekeeperPhoto = document.querySelector("#game-gatekeeper-photo");
   const verdict = document.querySelector("#game-verdict");
   const retryButton = document.querySelector("#game-retry");
-  if (!canvas || !startButton || !jumpButton || !status || !scoreNode || !overlay) return;
+  const cameo = document.querySelector("#game-video-cameo");
+  const cameoFrame = document.querySelector("#game-video-frame");
+  if (!canvas || !startButton || !jumpButton || !status || !scoreNode || !overlay || !cameo || !cameoFrame) return;
 
   const ctx = canvas.getContext("2d");
   const W = canvas.width;
@@ -28,11 +30,67 @@
   let gobbleFlash = 0;
   let inputLockedUntil = 0;
   let unlockTimer = 0;
+  let cameoTimer = 0;
+  let cameoVolumeTimer = 0;
+
+  const hurdleKinds = ["rails", "cross", "brush", "wall"];
+  const hurdleFlags = ["sweden", "england", "scotland", "france", "netherlands", "ireland"];
 
   const announce = text => { status.textContent = text; };
+
+  const youtubeCommand = (frame, func, args = []) => {
+    frame.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args }), "https://www.youtube.com");
+  };
+
+  const hideCameo = () => {
+    clearTimeout(cameoTimer);
+    clearInterval(cameoVolumeTimer);
+    cameo.classList.remove("is-visible");
+    window.setTimeout(() => {
+      if (!cameo.classList.contains("is-visible")) {
+        cameo.hidden = true;
+        cameoFrame.replaceChildren();
+      }
+    }, 650);
+  };
+
+  const playGatekeeperCameo = (startAt, duration) => {
+    clearTimeout(cameoTimer);
+    clearInterval(cameoVolumeTimer);
+    cameoFrame.replaceChildren();
+    const frame = document.createElement("iframe");
+    frame.title = "A brief message from The Gatekeeper";
+    frame.allow = "autoplay; encrypted-media; picture-in-picture";
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
+    frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    frame.addEventListener("load", () => {
+      let volume = 0;
+      youtubeCommand(frame, "unMute");
+      youtubeCommand(frame, "setVolume", [volume]);
+      cameoVolumeTimer = window.setInterval(() => {
+        volume = Math.min(26, volume + 4);
+        youtubeCommand(frame, "setVolume", [volume]);
+        if (volume >= 26) clearInterval(cameoVolumeTimer);
+      }, 90);
+      window.setTimeout(() => {
+        clearInterval(cameoVolumeTimer);
+        cameoVolumeTimer = window.setInterval(() => {
+          volume = Math.max(0, volume - 4);
+          youtubeCommand(frame, "setVolume", [volume]);
+          if (volume <= 0) clearInterval(cameoVolumeTimer);
+        }, 90);
+      }, Math.max(800, duration * 1000 - 900));
+    }, { once: true });
+    cameoFrame.append(frame);
+    cameo.hidden = false;
+    requestAnimationFrame(() => cameo.classList.add("is-visible"));
+    cameoTimer = window.setTimeout(hideCameo, duration * 1000 + 250);
+  };
+
   const reset = () => {
     cancelAnimationFrame(animation);
     clearTimeout(unlockTimer);
+    hideCameo();
     inputLockedUntil = 0;
     startButton.disabled = false;
     jumpButton.disabled = false;
@@ -76,10 +134,17 @@
   const spawn = () => {
     spawnCount += 1;
     const hurdleHeight = 54 + Math.random() * 34;
-    obstacles.push({ x: W + 30, y: ground - hurdleHeight, width: 76, height: hurdleHeight });
+    obstacles.push({
+      x: W + 30,
+      y: ground - hurdleHeight,
+      width: 76,
+      height: hurdleHeight,
+      kind: hurdleKinds[Math.floor(Math.random() * hurdleKinds.length)],
+      flag: hurdleFlags[Math.floor(Math.random() * hurdleFlags.length)]
+    });
     const isIceberg = spawnCount > 2 && Math.random() < 0.24;
     snacks.push({
-      x: W + 95,
+      x: W + 150,
       y: ground - hurdleHeight - 82 - Math.random() * 34,
       width: 43,
       height: 36,
@@ -91,6 +156,7 @@
   const finish = (iceberg = false) => {
     playing = false;
     cancelAnimationFrame(animation);
+    hideCameo();
     const messages = ["You maggot!", "You are banished!"];
     verdict.textContent = messages[Math.floor(Math.random() * messages.length)];
     if (!gatekeeperPhoto.src) gatekeeperPhoto.src = gatekeeperPhoto.dataset.src;
@@ -152,6 +218,8 @@
         scoreNode.textContent = String(score);
         gobbleFlash = 0.55;
         announce(`Crunch! Romaine gobbled. Score: ${score}.`);
+        if (score % 9 === 0) playGatekeeperCameo(1457, 8);
+        else if (score === 3) playGatekeeperCameo(1444, 4);
       }
     }
   };
@@ -181,31 +249,81 @@
     ctx.restore();
   };
 
-  const drawHurdle = hurdle => {
-    const { x, y, width, height } = hurdle;
-    const railLeft = x + 8;
-    const railWidth = width - 16;
-    const railYs = [y + 15, y + Math.min(41, height - 17)];
+  const drawFlag = (name, x, y) => {
+    const width = 29;
+    const height = 18;
+    ctx.fillStyle = "#69452f";
+    ctx.fillRect(x - 2, y - 3, 3, height + 11);
     ctx.save();
-    ctx.fillStyle = "#744326";
+    ctx.beginPath(); ctx.rect(x, y, width, height); ctx.clip();
+    if (name === "sweden") {
+      ctx.fillStyle = "#2675b8"; ctx.fillRect(x, y, width, height);
+      ctx.fillStyle = "#f5cf43"; ctx.fillRect(x + 9, y, 4, height); ctx.fillRect(x, y + 7, width, 4);
+    } else if (name === "england") {
+      ctx.fillStyle = "#fff"; ctx.fillRect(x, y, width, height);
+      ctx.fillStyle = "#d73a3a"; ctx.fillRect(x + 12, y, 5, height); ctx.fillRect(x, y + 7, width, 5);
+    } else if (name === "scotland") {
+      ctx.fillStyle = "#2471b9"; ctx.fillRect(x, y, width, height);
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + width, y + height); ctx.moveTo(x + width, y); ctx.lineTo(x, y + height); ctx.stroke();
+    } else if (name === "france") {
+      ctx.fillStyle = "#2450a4"; ctx.fillRect(x, y, width / 3, height);
+      ctx.fillStyle = "#fff"; ctx.fillRect(x + width / 3, y, width / 3, height);
+      ctx.fillStyle = "#e03b42"; ctx.fillRect(x + width * 2 / 3, y, width / 3, height);
+    } else if (name === "netherlands") {
+      ctx.fillStyle = "#ae1c28"; ctx.fillRect(x, y, width, height / 3);
+      ctx.fillStyle = "#fff"; ctx.fillRect(x, y + height / 3, width, height / 3);
+      ctx.fillStyle = "#21468b"; ctx.fillRect(x, y + height * 2 / 3, width, height / 3);
+    } else {
+      ctx.fillStyle = "#169b62"; ctx.fillRect(x, y, width / 3, height);
+      ctx.fillStyle = "#fff"; ctx.fillRect(x + width / 3, y, width / 3, height);
+      ctx.fillStyle = "#ff883e"; ctx.fillRect(x + width * 2 / 3, y, width / 3, height);
+    }
+    ctx.restore();
+    ctx.strokeStyle = "rgba(23,59,50,.35)"; ctx.lineWidth = 1; ctx.strokeRect(x, y, width, height);
+  };
+
+  const drawStripedRail = (left, top, width, offset = 0) => {
+    const pieces = 6;
+    for (let piece = 0; piece < pieces; piece += 1) {
+      ctx.fillStyle = (piece + offset) % 2 ? "#fffaf0" : "#e66a37";
+      ctx.fillRect(left + piece * width / pieces, top, width / pieces + 1, 9);
+    }
+    ctx.strokeStyle = "#744326"; ctx.lineWidth = 2; ctx.strokeRect(left, top, width, 9);
+  };
+
+  const drawHurdle = hurdle => {
+    const { x, y, width, height, kind, flag } = hurdle;
+    const left = x + 8;
+    const innerWidth = width - 16;
+    ctx.save();
     roundRect(x + 3, y - 8, 10, height + 8, 3, "#744326");
     roundRect(x + width - 13, y - 8, 10, height + 8, 3, "#744326");
     ctx.fillStyle = "#f6c85f";
     ctx.beginPath(); ctx.arc(x + 8, y - 8, 7, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(x + width - 8, y - 8, 7, 0, Math.PI * 2); ctx.fill();
-    railYs.forEach((railY, railIndex) => {
-      const pieces = 6;
-      for (let piece = 0; piece < pieces; piece += 1) {
-        ctx.fillStyle = (piece + railIndex) % 2 ? "#fffaf0" : "#e66a37";
-        ctx.fillRect(railLeft + piece * railWidth / pieces, railY, railWidth / pieces + 1, 9);
+
+    if (kind === "cross") {
+      ctx.strokeStyle = "#fffaf0"; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(left, y + 10); ctx.lineTo(left + innerWidth, y + height - 12); ctx.moveTo(left + innerWidth, y + 10); ctx.lineTo(left, y + height - 12); ctx.stroke();
+      ctx.strokeStyle = "#e66a37"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(left, y + 10); ctx.lineTo(left + innerWidth, y + height - 12); ctx.moveTo(left + innerWidth, y + 10); ctx.lineTo(left, y + height - 12); ctx.stroke();
+    } else if (kind === "brush") {
+      drawStripedRail(left, y + 12, innerWidth);
+      ctx.fillStyle = "#3f7c49"; ctx.fillRect(left, y + height - 23, innerWidth, 22);
+      for (let leaf = 0; leaf < 7; leaf += 1) {
+        ctx.beginPath(); ctx.arc(left + 5 + leaf * 9, y + height - 24 - (leaf % 2) * 5, 9, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.strokeStyle = "#744326";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(railLeft, railY, railWidth, 9);
-    });
-    ctx.fillStyle = "#744326";
+    } else if (kind === "wall") {
+      roundRect(left, y + 14, innerWidth, height - 15, 3, "#d59658", "#744326");
+      ctx.strokeStyle = "#a75d34"; ctx.lineWidth = 2;
+      for (let row = y + 29; row < y + height; row += 14) { ctx.beginPath(); ctx.moveTo(left, row); ctx.lineTo(left + innerWidth, row); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(left + innerWidth / 2, y + 14); ctx.lineTo(left + innerWidth / 2, y + height); ctx.stroke();
+    } else {
+      drawStripedRail(left, y + 15, innerWidth);
+      drawStripedRail(left, y + Math.min(41, height - 17), innerWidth, 1);
+    }
+
     roundRect(x - 3, y + height - 6, 22, 7, 3, "#744326");
     roundRect(x + width - 19, y + height - 6, 22, 7, 3, "#744326");
+    drawFlag(flag, x + 9, y - 35);
     ctx.restore();
   };
 
