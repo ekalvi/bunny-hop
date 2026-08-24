@@ -66,8 +66,8 @@
 
   const spawn = () => {
     spawnCount += 1;
-    const hurdleHeight = 42 + Math.random() * 38;
-    obstacles.push({ x: W + 30, y: ground - hurdleHeight, width: 44, height: hurdleHeight });
+    const hurdleHeight = 54 + Math.random() * 34;
+    obstacles.push({ x: W + 30, y: ground - hurdleHeight, width: 76, height: hurdleHeight });
     const isIceberg = spawnCount > 2 && Math.random() < 0.24;
     snacks.push({
       x: W + 95,
@@ -162,6 +162,34 @@
     ctx.restore();
   };
 
+  const drawHurdle = hurdle => {
+    const { x, y, width, height } = hurdle;
+    const railLeft = x + 8;
+    const railWidth = width - 16;
+    const railYs = [y + 15, y + Math.min(41, height - 17)];
+    ctx.save();
+    ctx.fillStyle = "#744326";
+    roundRect(x + 3, y - 8, 10, height + 8, 3, "#744326");
+    roundRect(x + width - 13, y - 8, 10, height + 8, 3, "#744326");
+    ctx.fillStyle = "#f6c85f";
+    ctx.beginPath(); ctx.arc(x + 8, y - 8, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + width - 8, y - 8, 7, 0, Math.PI * 2); ctx.fill();
+    railYs.forEach((railY, railIndex) => {
+      const pieces = 6;
+      for (let piece = 0; piece < pieces; piece += 1) {
+        ctx.fillStyle = (piece + railIndex) % 2 ? "#fffaf0" : "#e66a37";
+        ctx.fillRect(railLeft + piece * railWidth / pieces, railY, railWidth / pieces + 1, 9);
+      }
+      ctx.strokeStyle = "#744326";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(railLeft, railY, railWidth, 9);
+    });
+    ctx.fillStyle = "#744326";
+    roundRect(x - 3, y + height - 6, 22, 7, 3, "#744326");
+    roundRect(x + width - 19, y + height - 6, 22, 7, 3, "#744326");
+    ctx.restore();
+  };
+
   const drawSnack = snack => {
     ctx.save(); ctx.translate(snack.x, snack.y);
     if (snack.type === "romaine") {
@@ -184,10 +212,7 @@
     ctx.fillStyle = "#b9d99f"; ctx.beginPath(); ctx.moveTo(0, 265); ctx.quadraticCurveTo(180, 170, 360, 270); ctx.quadraticCurveTo(620, 150, 900, 270); ctx.lineTo(900, ground); ctx.lineTo(0, ground); ctx.fill();
     ctx.fillStyle = "#6f9c58"; ctx.fillRect(0, ground, W, H - ground);
     ctx.strokeStyle = "#517b42"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, ground); ctx.lineTo(W, ground); ctx.stroke();
-    obstacles.forEach(item => {
-      roundRect(item.x, item.y, item.width, item.height, 5, "#c67636", "#744326");
-      ctx.strokeStyle = "#8d4f29"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(item.x + 7, item.y + 14); ctx.lineTo(item.x + item.width - 7, item.y + 14); ctx.stroke();
-    });
+    obstacles.forEach(drawHurdle);
     snacks.filter(item => !item.eaten).forEach(drawSnack);
     drawBunny();
     if (gobbleFlash > 0) {
