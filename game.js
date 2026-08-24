@@ -182,7 +182,7 @@
     cancelAnimationFrame(animation);
     hideCameo();
     const messages = [
-      { text: "You maggot!", startAt: 1463, duration: 2 },
+      { text: "You maggot!", startAt: 1462.9, duration: 2.3 },
       { text: "You are banished!", startAt: 2214.2, duration: 4.3 }
     ];
     const message = messages[Math.floor(Math.random() * messages.length)];
