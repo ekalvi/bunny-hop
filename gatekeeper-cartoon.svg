@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 340" role="img" aria-labelledby="title desc">
+  <title id="title">The Gatekeeper</title>
+  <desc id="desc">A friendly cartoon course keeper in a green hooded cloak, waving and carrying a satchel full of romaine lettuce.</desc>
+  <rect x="4" y="4" width="492" height="332" rx="38" fill="#eaf4dd" stroke="#b7d39d" stroke-width="8"/>
+  <circle cx="67" cy="69" r="23" fill="#f6c85f" opacity=".75"/>
+  <path d="M414 47l5 13 14 2-11 9 3 14-12-7-12 7 3-14-11-9 14-2Z" fill="#e66a37" opacity=".8"/>
+  <path d="M37 286c69-27 137-24 205 7 79-30 155-33 225-3v42H37Z" fill="#cfe3b7"/>
+  <!-- hood and face -->
+  <path d="M128 184c-9-72 27-127 91-132 68-6 116 43 111 128l-37 51H161Z" fill="#39705c" stroke="#173b32" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M154 157c-1-57 29-91 74-91 48 0 81 36 80 96-21-24-48-37-80-37-29 0-54 10-74 32Z" fill="#b6d39a" stroke="#173b32" stroke-width="6"/>
+  <ellipse cx="230" cy="145" rx="59" ry="64" fill="#f7d9b2" stroke="#173b32" stroke-width="6"/>
+  <path d="M174 128c7-39 29-58 59-58 31 0 55 20 61 56-17-15-35-21-57-17-23 4-38 15-63 19Z" fill="#69452f"/>
+  <!-- friendly face -->
+  <path d="M191 136c10-6 20-6 29 0m23 0c11-6 21-6 30 0" fill="none" stroke="#5b3928" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="207" cy="149" rx="6" ry="8" fill="#173b32"/><ellipse cx="258" cy="149" rx="6" ry="8" fill="#173b32"/>
+  <circle cx="190" cy="169" r="10" fill="#eb9c8f" opacity=".58"/><circle cx="275" cy="169" r="10" fill="#eb9c8f" opacity=".58"/>
+  <path d="M230 149l-6 17h12M207 177c14 19 37 19 51 0" fill="none" stroke="#8a4938" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- cloak -->
+  <path d="M163 195c-36 27-51 72-52 135h231c-3-65-22-111-55-138-37 29-88 31-124 3Z" fill="#4f846d" stroke="#173b32" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M187 215c20 13 59 15 83 0l19 115H164Z" fill="#76a487" stroke="#315f4f" stroke-width="5"/>
+  <circle cx="229" cy="219" r="14" fill="#f2bd4c" stroke="#173b32" stroke-width="5"/>
+  <path d="M227 215c-4 13 0 23 5 26 6-6 8-16 5-25Z" fill="#e96736"/>
+  <!-- waving arm and hand -->
+  <path d="M164 228c-38-17-55-42-65-70" fill="none" stroke="#173b32" stroke-width="15" stroke-linecap="round"/>
+  <path d="M99 163c-17-6-25-18-21-28 7-4 13 7 17 13-2-16 2-29 10-30 9 7 7 29 2 45Z" fill="#f7d9b2" stroke="#173b32" stroke-width="6" stroke-linejoin="round"/>
+  <!-- satchel and romaine -->
+  <path d="M288 226c31 8 48 30 55 56M181 212c54 29 85 72 105 116" fill="none" stroke="#173b32" stroke-width="12" stroke-linecap="round"/>
+  <path d="M329 257c-14-40 21-60 48-31 7-37 49-39 61-6 29-15 52 19 31 44Z" fill="#4f8249" stroke="#2d613a" stroke-width="6"/>
+  <path d="M351 258c-5-23 18-34 33-16 5-25 30-24 34 2 18-12 31 4 22 21Z" fill="#a6c96d"/>
+  <path d="M383 257l-2-34m38 36 14-33" fill="none" stroke="#e0eba9" stroke-width="5"/>
+  <path d="M305 256h157l-13 74H317Z" fill="#c77b3b" stroke="#714326" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M302 260h164l-23 27H320Z" fill="#9c5d31" stroke="#714326" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="384" cy="288" r="7" fill="#f4c55e" stroke="#714326" stroke-width="4"/>
+</svg>
