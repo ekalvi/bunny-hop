@@ -7,6 +7,7 @@
   const scoreNode = document.querySelector("#game-score");
   const overlay = document.querySelector("#game-gatekeeper");
   const gatekeeperPhoto = document.querySelector("#game-gatekeeper-photo");
+  const gatekeeperFury = document.querySelector("#game-gatekeeper-fury");
   const verdict = document.querySelector("#game-verdict");
   const retryButton = document.querySelector("#game-retry");
   const cameo = document.querySelector("#game-video-cameo");
@@ -20,6 +21,7 @@
   const ground = 330;
   const bunny = { x: 122, y: ground - 55, width: 58, height: 55, vy: 0 };
   let obstacles = [];
+  let lightningBolts = [];
   let snacks = [];
   let playing = false;
   let score = 0;
@@ -32,8 +34,11 @@
   let inputLockedUntil = 0;
   let unlockTimer = 0;
   let cameoTimer = 0;
+  let cameoFadeTimer = 0;
   let cameoVolumeTimer = 0;
   let deathAudioTimer = 0;
+  let furyVideoTimer = 0;
+  let audioGeneration = 0;
 
   const hurdleKinds = ["rails", "cross", "brush", "wall"];
   const hurdleFlags = ["sweden", "england", "scotland", "france", "netherlands", "ireland"];
@@ -45,8 +50,15 @@
   };
 
   const hideCameo = () => {
+    audioGeneration += 1;
     clearTimeout(cameoTimer);
+    clearTimeout(cameoFadeTimer);
     clearInterval(cameoVolumeTimer);
+    const activeFrame = cameoFrame.querySelector("iframe");
+    if (activeFrame) {
+      youtubeCommand(activeFrame, "stopVideo");
+      activeFrame.remove();
+    }
     cameo.classList.remove("is-visible");
     window.setTimeout(() => {
       if (!cameo.classList.contains("is-visible")) {
@@ -57,9 +69,13 @@
   };
 
   const playGatekeeperCameo = (startAt, duration) => {
+    // One shared audio channel: a newer cue always interrupts an older one.
+    hideDeathAudio();
     clearTimeout(cameoTimer);
+    clearTimeout(cameoFadeTimer);
     clearInterval(cameoVolumeTimer);
     cameoFrame.replaceChildren();
+    const playbackGeneration = ++audioGeneration;
 
     // A local crop of the same source video keeps YouTube chrome out of the visual cameo.
     const video = document.createElement("video");
@@ -75,18 +91,28 @@
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
     frame.addEventListener("load", () => {
+      if (playbackGeneration !== audioGeneration || !frame.isConnected) return;
       video.play().catch(() => {});
       let volume = 0;
       youtubeCommand(frame, "unMute");
       youtubeCommand(frame, "setVolume", [volume]);
       cameoVolumeTimer = window.setInterval(() => {
+        if (playbackGeneration !== audioGeneration || !frame.isConnected) {
+          clearInterval(cameoVolumeTimer);
+          return;
+        }
         volume = Math.min(26, volume + 4);
         youtubeCommand(frame, "setVolume", [volume]);
         if (volume >= 26) clearInterval(cameoVolumeTimer);
       }, 90);
-      window.setTimeout(() => {
+      cameoFadeTimer = window.setTimeout(() => {
+        if (playbackGeneration !== audioGeneration || !frame.isConnected) return;
         clearInterval(cameoVolumeTimer);
         cameoVolumeTimer = window.setInterval(() => {
+          if (playbackGeneration !== audioGeneration || !frame.isConnected) {
+            clearInterval(cameoVolumeTimer);
+            return;
+          }
           volume = Math.max(0, volume - 4);
           youtubeCommand(frame, "setVolume", [volume]);
           if (volume <= 0) clearInterval(cameoVolumeTimer);
@@ -101,18 +127,23 @@
   };
 
   const hideDeathAudio = () => {
+    audioGeneration += 1;
     clearTimeout(deathAudioTimer);
+    const activeFrame = deathAudioFrame.querySelector("iframe");
+    if (activeFrame) youtubeCommand(activeFrame, "stopVideo");
     deathAudioFrame.replaceChildren();
   };
 
   const playGatekeeperDeathAudio = (startAt, duration) => {
     hideDeathAudio();
+    const playbackGeneration = ++audioGeneration;
     const frame = document.createElement("iframe");
     frame.title = "Gatekeeper game-over audio";
     frame.allow = "autoplay; encrypted-media";
     frame.referrerPolicy = "strict-origin-when-cross-origin";
     frame.src = `https://www.youtube.com/embed/3g31Dj-sEiA?autoplay=1&mute=1&start=${startAt}&end=${startAt + duration}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
     frame.addEventListener("load", () => {
+      if (playbackGeneration !== audioGeneration || !frame.isConnected) return;
       youtubeCommand(frame, "seekTo", [startAt, true]);
       youtubeCommand(frame, "setVolume", [48]);
       youtubeCommand(frame, "unMute");
@@ -131,6 +162,7 @@
     jumpButton.disabled = false;
     if (retryButton) retryButton.disabled = false;
     obstacles = [];
+    lightningBolts = [];
     snacks = [];
     bunny.y = ground - bunny.height;
     bunny.vy = 0;
@@ -141,7 +173,14 @@
     gobbleFlash = 0;
     scoreNode.textContent = "0";
     overlay.hidden = true;
-    overlay.classList.remove("is-crashing", "is-resting");
+    overlay.classList.remove("is-crashing", "is-resting", "is-lightning-death");
+    gatekeeperPhoto.hidden = false;
+    if (gatekeeperFury) {
+      clearTimeout(furyVideoTimer);
+      gatekeeperFury.hidden = true;
+      gatekeeperFury.pause();
+      gatekeeperFury.currentTime = 0;
+    }
     startButton.textContent = "Start hopping";
     draw();
   };
@@ -177,7 +216,18 @@
       kind: hurdleKinds[Math.floor(Math.random() * hurdleKinds.length)],
       flag: hurdleFlags[Math.floor(Math.random() * hurdleFlags.length)]
     });
-    const isIceberg = spawnCount > 2 && Math.random() < 0.24;
+    // A high route is not a safe shortcut: occasional bolts sweep in from above.
+    const spawnedLightning = spawnCount > 2 && (spawnCount % 4 === 0 || Math.random() < 0.08);
+    if (spawnedLightning) {
+      lightningBolts.push({
+        x: W + 210 + Math.random() * 100,
+        y: 0,
+        width: 58,
+        height: 112 + Math.random() * 54
+      });
+    }
+    // Never pair two lethal choices in the same lane; a bolt always gets safe romaine.
+    const isIceberg = !spawnedLightning && spawnCount > 2 && Math.random() < 0.24;
     snacks.push({
       x: W + 150,
       y: ground - hurdleHeight - 82 - Math.random() * 34,
@@ -188,19 +238,34 @@
     });
   };
 
-  const finish = (iceberg = false) => {
+  const finish = (reason = "obstacle") => {
     playing = false;
     cancelAnimationFrame(animation);
     hideCameo();
+    const lightningDeath = reason === "lightning";
     const messages = [
       { text: "You maggot!", startAt: 1462.9, duration: 2.3 },
       { text: "You are banished!", startAt: 2214, duration: 4 }
     ];
-    const message = messages[Math.floor(Math.random() * messages.length)];
+    const message = lightningDeath
+      // Skip the clip's first 300 ms so iframe startup latency stays in sync with the local video.
+      ? { text: "MY FURY!", startAt: 1457.3, duration: 3 }
+      : messages[Math.floor(Math.random() * messages.length)];
     verdict.textContent = message.text;
     playGatekeeperDeathAudio(message.startAt, message.duration);
-    if (!gatekeeperPhoto.src) gatekeeperPhoto.src = gatekeeperPhoto.dataset.src;
-    overlay.classList.remove("is-resting");
+    overlay.classList.remove("is-resting", "is-lightning-death");
+    if (lightningDeath && gatekeeperFury) {
+      gatekeeperPhoto.hidden = true;
+      gatekeeperFury.hidden = false;
+      gatekeeperFury.currentTime = 0;
+      gatekeeperFury.play().catch(() => {});
+      furyVideoTimer = window.setTimeout(() => gatekeeperFury.pause(), message.duration * 1000);
+      overlay.classList.add("is-lightning-death");
+    } else {
+      if (!gatekeeperPhoto.src) gatekeeperPhoto.src = gatekeeperPhoto.dataset.src;
+      gatekeeperPhoto.hidden = false;
+      if (gatekeeperFury) gatekeeperFury.hidden = true;
+    }
     overlay.classList.add("is-crashing");
     inputLockedUntil = performance.now() + 1600;
     startButton.disabled = true;
@@ -212,8 +277,12 @@
       jumpButton.disabled = false;
       if (retryButton) retryButton.disabled = false;
     }, 1600);
-    const reason = iceberg ? "You accidentally ate iceberg lettuce." : "Your bunny bumped an obstacle.";
-    announce(`${verdict.textContent} ${reason} Score: ${score}. Controls unlock in a moment.`);
+    const reasonText = lightningDeath
+      ? "Your bunny was struck by a lightning bolt at the top of the course."
+      : reason === "iceberg"
+        ? "You accidentally ate iceberg lettuce."
+        : "Your bunny bumped an obstacle.";
+    announce(`${verdict.textContent} ${reasonText} Score: ${score}. Controls unlock in a moment.`);
     overlay.hidden = false;
   };
 
@@ -239,19 +308,25 @@
 
     const speed = Math.min(390, 270 + elapsed * 2.4);
     obstacles.forEach(item => { item.x -= speed * dt; });
+    lightningBolts.forEach(item => { item.x -= speed * dt; });
     snacks.forEach(item => { item.x -= speed * dt; });
     obstacles = obstacles.filter(item => item.x + item.width > -20);
+    lightningBolts = lightningBolts.filter(item => item.x + item.width > -20);
     snacks = snacks.filter(item => !item.eaten && item.x + item.width > -20);
 
+    if (lightningBolts.some(item => intersects(bunny, item, 8))) {
+      finish("lightning");
+      return;
+    }
     if (obstacles.some(item => intersects(bunny, item, 9))) {
-      finish(false);
+      finish("obstacle");
       return;
     }
     for (const snack of snacks) {
       if (!snack.eaten && intersects(bunny, snack, 8)) {
         snack.eaten = true;
         if (snack.type === "iceberg") {
-          finish(true);
+          finish("iceberg");
           return;
         }
         score += 1;
@@ -367,6 +442,33 @@
     ctx.restore();
   };
 
+  const drawLightning = bolt => {
+    const { x, width, height } = bolt;
+    ctx.save();
+    ctx.fillStyle = "rgba(46,55,72,.82)";
+    ctx.beginPath();
+    ctx.arc(x + 9, 15, 22, 0, Math.PI * 2);
+    ctx.arc(x + width / 2, 10, 29, 0, Math.PI * 2);
+    ctx.arc(x + width - 7, 17, 21, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowColor = "#fff7a8";
+    ctx.shadowBlur = 17;
+    ctx.fillStyle = "#ffd83d";
+    ctx.strokeStyle = "#fff8b2";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x + 34, 25);
+    ctx.lineTo(x + 12, height * .56);
+    ctx.lineTo(x + 29, height * .53);
+    ctx.lineTo(x + 18, height);
+    ctx.lineTo(x + 52, height * .42);
+    ctx.lineTo(x + 35, height * .45);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  };
+
   const drawSnack = snack => {
     ctx.save(); ctx.translate(snack.x, snack.y);
     if (snack.type === "romaine") {
@@ -390,6 +492,7 @@
     ctx.fillStyle = "#6f9c58"; ctx.fillRect(0, ground, W, H - ground);
     ctx.strokeStyle = "#517b42"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, ground); ctx.lineTo(W, ground); ctx.stroke();
     obstacles.forEach(drawHurdle);
+    lightningBolts.forEach(drawLightning);
     snacks.filter(item => !item.eaten).forEach(drawSnack);
     drawBunny();
     if (gobbleFlash > 0) {
