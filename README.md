@@ -51,4 +51,4 @@ pm2 logs q5m-bunny-hop --lines 100
 
 ## Production
 
-The public site is a standalone project at `https://bunny-hop.q5m.ai/`. Its production contract is under `q5m/` and runs as the dedicated `bunny-hop-site-1` container on `q5m-n02`, reached through the `q5m-prod-n02` Cloudflare Tunnel on port `8780`. GitHub Pages is disabled and is not part of production. This project does not belong to q5m-platform.
+The public site is a standalone project at `https://bunny-hop.q5m.ai/`. Its production contract is under `q5m/` and runs as the dedicated `q5m-bunny-hop-site-1` container on `q5m-n01`, reached through the n01 Cloudflare Tunnel on port `8780`. GitHub Pages is disabled and is not part of production. This project does not belong to q5m-platform.
