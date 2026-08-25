@@ -28,7 +28,7 @@
     document.querySelector("#event-status").textContent = "We would love to meet you there.";
   }
 
-  const gatekeeperTriggers = document.querySelectorAll("[data-gatekeeper-video]");
+  const gatekeeperTriggers = document.querySelectorAll("[data-gatekeeper-clip]");
   const gatekeeperDialog = document.querySelector("#gatekeeper-dialog");
   const gatekeeperClose = document.querySelector("#close-gatekeeper");
   const gatekeeperVideo = document.querySelector("#gatekeeper-video");
@@ -36,7 +36,11 @@
   const gatekeeperSource = document.querySelector("#gatekeeper-source");
 
   const stopGatekeeper = () => {
-    gatekeeperVideo?.querySelector("iframe")?.remove();
+    const video = gatekeeperVideo?.querySelector("video");
+    if (video) {
+      video.pause();
+      video.remove();
+    }
   };
   const closeGatekeeper = () => {
     stopGatekeeper();
@@ -52,13 +56,18 @@
       gatekeeperSource.href = trigger.dataset.gatekeeperSource;
     }
     gatekeeperDialog.showModal();
-    const frame = document.createElement("iframe");
-    frame.title = "The Gatekeeper from the 1991 Nightmare video board game";
-    frame.src = trigger.dataset.gatekeeperVideo;
-    frame.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share";
-    frame.referrerPolicy = "strict-origin-when-cross-origin";
-    frame.allowFullscreen = true;
-    gatekeeperVideo.append(frame);
+    const video = document.createElement("video");
+    video.src = trigger.dataset.gatekeeperClip;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    video.controls = false;
+    video.disablePictureInPicture = true;
+    video.disableRemotePlayback = true;
+    video.setAttribute("controlslist", "nodownload nofullscreen noremoteplayback");
+    video.setAttribute("aria-label", "The Gatekeeper from the 1991 Nightmare video board game");
+    gatekeeperVideo.append(video);
+    video.play().catch(() => {});
   }));
   gatekeeperClose?.addEventListener("click", closeGatekeeper);
   gatekeeperDialog?.addEventListener("close", stopGatekeeper);
