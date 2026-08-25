@@ -7,7 +7,7 @@ A polished, mobile-first recruitment website for The Gatekeeper's friendly, volu
 - `index.html` — semantic one-page site and all copy
 - `styles.css` — responsive design, accessible focus states, and reduced-motion support
 - `event-config.js` — **the single place to edit event details**
-- `script.js` — event display, Gatekeeper dialog, and local `mailto:` form preparation
+- `popup-video.js` — event display, Gatekeeper dialog, and local `mailto:` form preparation
 - `favicon.svg`, `social-card.svg` — original local artwork
 - The friendly cartoon Gatekeeper is an original inline SVG in `index.html`; the real Gatekeeper appears only after the video is opened
 - `404.html` — custom not-found page
