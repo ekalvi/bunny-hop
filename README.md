@@ -4,18 +4,19 @@ A polished, mobile-first recruitment website for The Gatekeeper's friendly, volu
 
 ## Files
 
-- `index.html` — semantic one-page site and all copy
-- `styles.css` — responsive design, accessible focus states, and reduced-motion support
-- `event-config.js` — **the single place to edit event details**
-- `popup-video.js` — event display, Gatekeeper dialog, and local `mailto:` form preparation
-- `favicon.svg`, `social-card.svg` — original local artwork
-- The friendly cartoon Gatekeeper is an original inline SVG in `index.html`; the real Gatekeeper appears only after the video is opened
-- `404.html` — custom not-found page
-- `server.py` — LAN-only static HTTP server with security headers
+- `public/index.html` — semantic one-page site and all copy
+- `public/styles.css` — responsive design, accessible focus states, and reduced-motion support
+- `public/event.js` — **the single place to edit event details**
+- `public/popup-video.js` — event display, Gatekeeper dialog, and local `mailto:` form preparation
+- `public/favicon.svg`, `public/social-card.svg` — original local artwork
+- The friendly cartoon Gatekeeper is an original inline SVG in `public/index.html`; the real Gatekeeper appears only after the video is opened
+- `public/404.html` — custom not-found page
+- `q5m.yaml` — application facts used by the global `q5m-lab-hosting` skill and `q5m-lab`
+- `server.py` — local static HTTP server with security headers
 
 ## Edit event details
 
-Open `event-config.js` and replace the empty strings in `window.HOP_EVENT`. Leave unknown values empty. Once `contactEmail` contains a valid address, the form enables itself and opens the visitor's email client with a prefilled message. The site itself never stores or transmits form data.
+Open `public/event.js` and replace the empty strings in `window.HOP_EVENT`. Leave unknown values empty. Once `contactEmail` contains a valid address, the form enables itself and opens the visitor's email client with a prefilled message. The site itself never stores or transmits form data.
 
 ## Run locally
 
