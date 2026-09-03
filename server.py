@@ -6,7 +6,7 @@ import argparse
 import os
 import sys
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent / "public"
 
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".svg": "image/svg+xml", ".js": "text/javascript", ".css": "text/css"}

@@ -1,0 +1,6 @@
+version: 1
+name: bunny-hop
+kind: static
+root: public
+health: /healthz
+production: bunny-hop.q5m.ai
