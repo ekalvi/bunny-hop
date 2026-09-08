@@ -1,6 +1,13 @@
-version: 1
+version: 2
 name: bunny-hop
-kind: static
-root: public
-health: /healthz
-production: bunny-hop.q5m.ai
+development:
+  command: [python3, server.py]
+  health: /healthz
+release:
+  adapter: compose
+  compose: q5m/compose.yaml
+  contract: q5m/app.env
+  health: /healthz
+environments:
+  staging:
+    default_node: q5m-n01
