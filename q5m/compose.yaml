@@ -14,7 +14,7 @@ services:
     security_opt: [no-new-privileges:true]
     ports:
       - target: 8780
-        published: "8780"
+        published: "${Q5M_HTTP_PORT:?set the allocated HTTP port}"
         host_ip: 0.0.0.0
         protocol: tcp
     tmpfs:
