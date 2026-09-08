@@ -5,6 +5,7 @@ services:
       context: ${Q5M_RELEASE_DIR:?set the immutable release directory}
       dockerfile: q5m/Dockerfile
       args:
+        Q5M_APP: ${Q5M_APP}
         Q5M_RELEASE: ${Q5M_RELEASE}
     init: true
     restart: "no"
