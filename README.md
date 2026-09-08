@@ -28,6 +28,8 @@ Then open `http://127.0.0.1:8780/`.
 
 For homelab hosting tasks, use `q5m.yaml`, the global `q5m-lab-hosting` skill, and `q5m-lab` rather than creating project-specific infrastructure instructions.
 
-## Production
+## Hosting environments
 
-The public site is available at `https://bunny-hop.q5m.ai/`. Its retained production contract is under `q5m/`. GitHub Pages is disabled and is not part of production.
+Development and staging are declared in `q5m.yaml`. Staging uses the managed q5m project workflow and a generated `q5m.io` hostname; the declaration does not authorize deployment by itself.
+
+The public production site remains at `https://bunny-hop.q5m.ai/` on its previously accepted immutable release. Production is not yet declared as a q5m project environment, and the current site must not be cut over until the production workflow and rollback path are separately verified. The retained application contract is under `q5m/`. GitHub Pages is disabled and is not part of production.
