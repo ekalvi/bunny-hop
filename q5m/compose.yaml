@@ -1,6 +1,6 @@
 services:
   site:
-    image: q5m/bunny-hop:${Q5M_RELEASE:?set the exact full release commit}
+    image: q5m/${Q5M_APP}:${Q5M_RELEASE:?set the exact full release commit}
     build:
       context: ${Q5M_RELEASE_DIR:?set the immutable release directory}
       dockerfile: q5m/Dockerfile
