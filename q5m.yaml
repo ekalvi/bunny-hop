@@ -1,3 +1,6 @@
+# The first authorized main deployment adopts the existing n03 production owner.
+# It preserves the Compose image, port 8780, bunny-hop.q5m.ai tunnel and rollback
+# history. Development remains a separate local entry point.
 version: 2
 name: bunny-hop
 development:
@@ -7,7 +10,7 @@ release:
   adapter: compose
   compose: q5m/compose.yaml
   contract: q5m/app.env
-  health: /healthz
-environments:
-  staging:
-    default_node: q5m-n01
+  health: /.q5m-release
+production:
+  node: q5m-n03
+  hostname: bunny-hop.q5m.ai
