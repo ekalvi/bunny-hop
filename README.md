@@ -30,6 +30,6 @@ For homelab hosting tasks, use `q5m.yaml`, the global `q5m-lab-hosting` skill, a
 
 ## Hosting environments
 
-Development and staging are declared in `q5m.yaml`. Staging uses the managed q5m project workflow and a generated `q5m.io` hostname; the declaration does not authorize deployment by itself.
+Development and production are declared in `q5m.yaml`; the declaration does not authorize deployment by itself. Temporary external review remains a separate managed `q5m.io` workflow.
 
-The public production site remains at `https://bunny-hop.q5m.ai/` on its previously accepted immutable release. Production is not yet declared as a q5m project environment, and the current site must not be cut over until the production workflow and rollback path are separately verified. The retained application contract is under `q5m/`. GitHub Pages is disabled and is not part of production.
+The public production site is available at `https://bunny-hop.q5m.ai/`. Its first YAML-managed production release explicitly adopts the matching existing n03 Compose owner while preserving the hostname, tunnel, port, and rollback history. The application release contract is under `q5m/`. GitHub Pages is disabled and is not part of production.
